@@ -13,10 +13,10 @@ test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/b
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
-build-mitsuba = { cmd = "ninja -C build-mitsuba", depends-on = [
+build-mitsuba = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba", depends-on = [
     "configure-mitsuba",
 ] }
-configure-mitsuba = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B build-mitsuba" }
+configure-mitsuba = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba" }
 
 test-drjit = { cmd = "python -m pytest", cwd = "mitsuba3/build-drjit", depends-on = [
     "build-drjit",
@@ -24,13 +24,15 @@ test-drjit = { cmd = "python -m pytest", cwd = "mitsuba3/build-drjit", depends-o
 debug-drjit = { cmd = "gdb --args python -m pytest", cwd = "mitsuba3/build-drjit", depends-on = [
     "build-drjit",
 ] }
-build-drjit = { cmd = "ninja -C build-drjit", depends-on = ["configure-drjit"] }
-configure-drjit = { cmd = "cmake -DDRJIT_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ -B build-drjit" }
+build-drjit = { cmd = "ninja", cwd = "mitsuba3/build-drjit", depends-on = [
+    "configure-drjit",
+] }
+configure-drjit = { cmd = "cmake -DDRJIT_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ -B mitsuba3/build-drjit" }
 
-build-drjit-core = { cmd = "ninja -C build-drjit-core", depends-on = [
+build-drjit-core = { cmd = "ninja", cwd = "mitsuba3/build-drjit-core", depends-on = [
     "configure-drjit-core",
 ] }
-configure-drjit-core = { cmd = "cmake -DDRJIT_CORE_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ext/drjit-core -B build-drjit-core" }
+configure-drjit-core = { cmd = "cmake -DDRJIT_CORE_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ext/drjit-core -B mitsuba3/build-drjit-core" }
 
 [dependencies]
 cmake = "3.28"
