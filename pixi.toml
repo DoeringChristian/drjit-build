@@ -18,6 +18,17 @@ build-mitsuba = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba", depends-on = [
 ] }
 configure-mitsuba = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba" }
 
+test-mitsuba-clang = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/build-mitsuba-clang", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+    "build-mitsuba-clang",
+] }
+debug-mitsuba-clang = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba-clang", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+    "build-mitsuba-clang",
+] }
+build-mitsuba-clang = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba-clang", depends-on = [
+    "configure-mitsuba-clang",
+] }
+configure-mitsuba-clang = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba-clang", env = { CC = "clang", CXX = "clang++", LD_LIBRARY_PATH = "$CONDA_PREFIX/lib", LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
+
 test-drjit = { cmd = "python -m pytest", cwd = "mitsuba3/build-drjit", depends-on = [
     "build-drjit",
 ] }
