@@ -130,6 +130,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libuv-1.49.2-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.13.5-h064dc61_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/llvm-tools-19-19.1.4-h48f18f5_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/llvm-tools-19.1.4-h84d6215_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/llvmdev-19.1.4-h48f18f5_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-he02047a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ninja-1.12.1-h297d8ca_0.conda
       - conda: https://conda.anaconda.org/nvidia/label/cuda-12.4.0/linux-64/nsight-compute-2024.1.0.13-0.tar.bz2
@@ -1168,6 +1171,58 @@ packages:
   license_family: Other
   size: 60963
   timestamp: 1727963148474
+- conda: https://conda.anaconda.org/conda-forge/linux-64/llvm-tools-19.1.4-h84d6215_1.conda
+  sha256: 0fdd5cbd0a7b43deb18115d72c60c4627905c8b2a88f11eee16bb8b2261153ba
+  md5: 62173fb7c4a116414b660402194daee2
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libllvm19 19.1.4 ha7bfdaf_1
+  - libstdcxx >=13
+  - llvm-tools-19 19.1.4 h48f18f5_1
+  constrains:
+  - clang-tools 19.1.4
+  - llvmdev     19.1.4
+  - llvm        19.1.4
+  - clang       19.1.4
+  license: Apache-2.0 WITH LLVM-exception
+  license_family: Apache
+  size: 86949
+  timestamp: 1732691160470
+- conda: https://conda.anaconda.org/conda-forge/linux-64/llvm-tools-19-19.1.4-h48f18f5_1.conda
+  sha256: 37285036d972b9a9c46c411a12d542eca31833430f2a7cfa1ae3d9ac09d92436
+  md5: 0d8c0f0bfb75ee000f64b83eac76aa8b
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libllvm19 19.1.4 ha7bfdaf_1
+  - libstdcxx >=13
+  - libzlib >=1.3.1,<2.0a0
+  - zstd >=1.5.6,<1.6.0a0
+  license: Apache-2.0 WITH LLVM-exception
+  license_family: Apache
+  size: 22995498
+  timestamp: 1732691102195
+- conda: https://conda.anaconda.org/conda-forge/linux-64/llvmdev-19.1.4-h48f18f5_1.conda
+  sha256: 7c8ce5a1713cbe7776a932d9539f32a9367d2b4f02a78dcc3bfb6f10fe1b9d23
+  md5: dd3b3cfed9d95cd36ec35741ea62c8eb
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=13
+  - libllvm19 19.1.4 ha7bfdaf_1
+  - libstdcxx >=13
+  - libzlib >=1.3.1,<2.0a0
+  - llvm-tools 19.1.4 h84d6215_1
+  - zstd >=1.5.6,<1.6.0a0
+  constrains:
+  - clang-tools 19.1.4
+  - llvm-tools  19.1.4
+  - llvm        19.1.4
+  - clang       19.1.4
+  license: Apache-2.0 WITH LLVM-exception
+  license_family: Apache
+  size: 61016076
+  timestamp: 1732691182422
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-he02047a_1.conda
   sha256: 6a1d5d8634c1a07913f1c525db6455918cbc589d745fac46d9d6e30340c8731a
   md5: 70caf8bb6cf39a0b6b7efc885f51c0fe
@@ -1183,8 +1238,6 @@ packages:
   depends:
   - libgcc-ng >=12
   - libstdcxx-ng >=12
-  arch: x86_64
-  platform: linux
   license: Apache-2.0
   license_family: Apache
   size: 2198858
