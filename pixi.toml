@@ -78,6 +78,7 @@ numpy = ">=2.1.2,<3"
 libcxx = ">=19.1.1,<20"
 libcxx-devel = ">=19.1.1,<20"
 libcxxabi = ">=19.1.1,<20"
+ninja = ">=1.12.1,<2"
 
 # [target.linux-64.activation]
 # scripts = ["build-pixi/setpath.sh"]
