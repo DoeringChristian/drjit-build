@@ -8,6 +8,9 @@ version = "0.1.0"
 
 [tasks]
 # Mitsuba GCC
+sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+    "build-mitsuba",
+] }
 test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
