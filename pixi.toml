@@ -32,7 +32,7 @@ debug-mitsuba-clang = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest",
 build-mitsuba-clang = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba-clang", depends-on = [
     "configure-mitsuba-clang",
 ], env = { LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
-configure-mitsuba-clang = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS='-fuse-ld=mold' -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba-clang", env = { CC = "clang", CXX = "clang++", LD_LIBRARY_PATH = "$CONDA_PREFIX/lib", LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
+configure-mitsuba-clang = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS='-fuse-ld=lld' -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba-clang", env = { CC = "clang", CXX = "clang++", LD_LIBRARY_PATH = "$CONDA_PREFIX/lib", LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
 
 # Dr.Jit GCC
 test-drjit = { cmd = "python -m pytest", cwd = "mitsuba3/build-drjit", depends-on = [
