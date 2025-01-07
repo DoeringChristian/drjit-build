@@ -1,10 +1,13 @@
 [project]
 authors = ["Christian Döring <christian.doering@tum.de>"]
-channels = ["nvidia/label/cuda-12.4.0", "nvidia", "conda-forge", "pytorch"]
+channels = ["conda-forge"]
 description = "Add a short description here"
 name = "python"
 platforms = ["linux-64"]
 version = "0.1.0"
+
+[system-requirements]
+cuda = "12.4"
 
 [tasks]
 # Mitsuba GCC
@@ -67,7 +70,6 @@ configure-drjit-core = { cmd = "cmake -DDRJIT_CORE_ENABLE_TESTS=on -DCMAKE_BUILD
 
 [dependencies]
 cmake = "3.28"
-cuda = "12.4"
 gcc = "13.2.*"
 gxx = "13.2.*"
 python = "3.11"
