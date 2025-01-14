@@ -1,3 +1,7 @@
+# Implicit System Requirements:
+# - bear
+
+
 [project]
 authors = ["Christian Döring <christian.doering@tum.de>"]
 channels = ["conda-forge"]
@@ -20,7 +24,7 @@ test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/b
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
-build-mitsuba = { cmd = "bear -- ninja", cwd = "mitsuba3/build-mitsuba", depends-on = [
+build-mitsuba = { cmd = "bear -- ninja || ninja", cwd = "mitsuba3/build-mitsuba", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib" }, depends-on = [
     "configure-mitsuba",
 ] }
 configure-mitsuba = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba" }
@@ -32,7 +36,7 @@ test-mitsuba-clang = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mits
 debug-mitsuba-clang = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba-clang", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba-clang",
 ] }
-build-mitsuba-clang = { cmd = "bear -- ninja", cwd = "mitsuba3/build-mitsuba-clang", depends-on = [
+build-mitsuba-clang = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba-clang", depends-on = [
     "configure-mitsuba-clang",
 ], env = { LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
 configure-mitsuba-clang = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS='-fuse-ld=lld' -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba-clang", env = { CC = "clang", CXX = "clang++", LD_LIBRARY_PATH = "$CONDA_PREFIX/lib", LIBRARY_PATH = "$CONDA_PREFIX/lib" } }
@@ -87,7 +91,6 @@ ninja = ">=1.12.1,<2"
 llvmdev = ">=19.1.4,<20"
 lld = ">=19.1.4,<20"
 mold = ">=2.35.1,<3"
-bear = ">=3.1.0,<4"
 
 # [target.linux-64.activation]
 # scripts = ["build-pixi/setpath.sh"]
