@@ -21,7 +21,7 @@ sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pyte
 test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
-profile-mitsuba = { cmd = "echo $PYTHONPATH && perf record -o /home/doeringc/workspace/cpp/drjit/mitsuba3/perf.data --call-graph dwarf --aio -z --sample-cpu python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+profile-mitsuba = { cmd = "perf record -o perf.data --call-graph dwarf --aio -z --sample-cpu python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
