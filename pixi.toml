@@ -21,10 +21,13 @@ sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pyte
 test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
+profile-mitsuba = { cmd = "echo $PYTHONPATH && perf record --call-graph dwarf python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+    "build-mitsuba",
+] }
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
-build-mitsuba = { cmd = "bear -- ninja || ninja", cwd = "mitsuba3/build-mitsuba", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib" }, depends-on = [
+build-mitsuba = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib" }, depends-on = [
     "configure-mitsuba",
 ] }
 configure-mitsuba = { cmd = "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba" }
