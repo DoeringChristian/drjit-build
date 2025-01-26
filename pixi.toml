@@ -24,6 +24,7 @@ test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/b
 profile-mitsuba = { cmd = "perf record -o perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
+hotspot-mitsuba = { cmd = "hotspot perf.data", cwd = "mitsuba3/build-mitsuba"}
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
