@@ -15,6 +15,9 @@ cuda = "12.4"
 
 [tasks]
 nsys-prof = { cmd = "nsys profile -o out/profile", cwd ="test-mitsuba", depends-on =["build-mitsuba"] }
+profile = { cmd = "perf record -o out/perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu", cwd = "test-mitsuba", depends-on = [
+    "build-mitsuba",
+] }
 # Mitsuba GCC
 sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
