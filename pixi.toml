@@ -14,6 +14,7 @@ version = "0.1.0"
 cuda = "12.4"
 
 [tasks]
+nsys-prof = { cmd = "nsys profile -o out/profile", cwd ="test-mitsuba", depends-on =["build-mitsuba"] }
 # Mitsuba GCC
 sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
@@ -96,8 +97,8 @@ llvmdev = ">=19.1.4,<20"
 lld = ">=19.1.4,<20"
 mold = ">=2.35.1,<3"
 
-# [target.linux-64.activation]
-# scripts = ["build-pixi/setpath.sh"]
+[target.linux-64.activation]
+scripts = ["mitsuba3/build-mitsuba/setpath.sh"]
 
 [target.linux-64.activation.env]
 CMAKE_PREFIX_PATH = "$CONDA_PREFIX"
