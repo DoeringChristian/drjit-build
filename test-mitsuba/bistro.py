@@ -7,6 +7,9 @@ import tqdm
 
 mi.set_variant("cuda_ad_rgb")
 
+# dr.set_flag(dr.JitFlag.LaunchBlocking, True)
+dr.set_log_level(dr.LogLevel.Warn)
+
 os.makedirs("out/bistro", exist_ok=True)
 
 
@@ -16,7 +19,7 @@ def func(scene: mi.Scene, seed: mi.UInt32) -> mi.TensorXf:
     return result
 
 
-frozen = dr.freeze(func)
+frozen = dr.freeze(func, auto_opaque=True)
 
 
 def run(
@@ -29,21 +32,24 @@ def run(
     images = []
     duration = 0
     for i in tqdm.tqdm(range(b + n)):
-        if i >= b:
-            duration -= time.time()
-        dr.sync_thread()
-        img = func(scene, mi.UInt32(i))
-        dr.sync_thread()
-        if i >= b:
-            duration += time.time()
-        images.append(img)
-        mi.util.write_bitmap(f"out/bistro/{name}{i}.exr", img)
+        with dr.profile_range("iteration"):
+            if i >= b:
+                duration -= time.time()
+            dr.sync_thread()
+            seed = mi.UInt32(i)
+            # dr.make_opaque(seed)
+            img = func(scene, seed)
+            dr.sync_thread()
+            if i >= b:
+                duration += time.time()
+            images.append(img)
+            mi.util.write_bitmap(f"out/bistro/{name}{i}.exr", img)
     return images, duration / n
 
 
-scene = mi.load_file("data/bistro_singlebsdf/scene.xml")
-n = 10
-b = 3
+scene = mi.load_file("data/bistro_singlebsdf/scene.xml", parallel=False)
+n = 100
+b = 10
 
 print("Normal:")
 ref, d_ref = run("normal", scene, func, n, b)
@@ -55,3 +61,4 @@ for ref, res in zip(ref, res):
     assert dr.allclose(ref, res)
 
 print(f"normal: {d_ref}s, frozen: {d_res}s")
+print(f"{frozen.n_recordings=}")
