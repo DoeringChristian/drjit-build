@@ -104,6 +104,7 @@ tqdm = ">=4.67.1,<5"
 
 cuda = "*"
 ccache = ">=4.10.1,<5"
+gdb = ">=15.1,<16"
 
 [target.linux-64.activation]
 scripts = ["mitsuba3/build-mitsuba/setpath.sh"]
