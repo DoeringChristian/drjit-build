@@ -121,4 +121,6 @@ CUDA_TOOLKIT_ROOT_DIR = "$CONDA_PREFIX/lib"
 [pypi-dependencies]
 notebook = ">=7.3.2, <8"
 ipywidgets = ">=8.1.5, <9"
+matplotlib = ">=3.10.1, <4"
+cholespy = ">=2.1.0, <3"
 # PYTHONPATH = "python:$PYTHONPATH"
