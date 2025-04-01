@@ -108,6 +108,7 @@ numpy = ">=2.1.2,<3"
 tqdm = ">=4.67.1,<5"
 
 cuda = "*"
+nsight-compute = ">=2025.1.1.0,<2026"
 
 [target.linux-64.activation]
 scripts = ["mitsuba3/build-mitsuba/setpath.sh"]
