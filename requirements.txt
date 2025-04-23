@@ -5,3 +5,8 @@ cholespy
 ipywidgets
 notebook
 matplotlib
+torch
+torchvision
+torchaudio
+gpytoolbox
+sphinx
