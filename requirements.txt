@@ -1,3 +1,7 @@
 pytest
 numpy
 dbg
+cholespy
+ipywidgets
+notebook
+matplotlib
