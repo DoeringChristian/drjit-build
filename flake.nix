@@ -4,19 +4,21 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
+    nixgl.url = "github:nix-community/nixGL";
   };
 
   outputs = {
     self,
     nixpkgs,
     utils,
+    nixgl,
     ...
   }:
     utils.lib.eachDefaultSystem (
       system: let
-        nvidia-library-path = "/usr/lib/x86_64-linux-gnu";
         pkgs = import nixpkgs {
           inherit system;
+          overlays = [nixgl.overlay];
           config = {
             allowUnfree = true;
             cudaSupport = true;
@@ -101,9 +103,9 @@
 
               # CUDA
               cudatoolkit
-              # cudaPackages.cuda_cudart
-              # cudaPackages.cuda_nvtx
-              # cudaPackages.cuda_nvrtc
+              pkgs.nixgl.auto.nixGLNvidia
+              pkgs.nixgl.auto.nixGLDefault
+              # linuxPackages.nvidia_x11
 
               # LLVM
               llvmPackages_19.clang
@@ -119,6 +121,7 @@
             ];
 
             CMAKE_CXX_COMPILER_LAUNCHER = "ccache";
+            # DRJIT_LIBLLVM_PATH = "${pkgs.llvm.lib}/lib/libLLVM.so";
             NIX_ENFORCE_NO_NATIVE = null;
 
             shellHook = ''
@@ -129,7 +132,7 @@
               export CXX="${gcc13}/bin/g++"
               export PATH="${gcc13}/bin:$PATH"
 
-              export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${nvidia-library-path}"
+              export LD_LIBRARY_PATH="$(nixGL printenv LD_LIBRARY_PATH):$LD_LIBRARY_PATH"
               export LD_LIBRARY_PATH="${llvm.lib}/lib:$LD_LIBRARY_PATH"
             '';
           };
