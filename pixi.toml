@@ -14,6 +14,7 @@ version = "0.1.0"
 cuda = "12.4"
 
 [tasks]
+hotspot = { cmd = "bin/hotspot-v1.5.1-x86_64.AppImage" }
 nsys-prof = { cmd = "nsys profile -o out/profile", cwd ="test-mitsuba", depends-on =["build-mitsuba"] }
 profile = { cmd = "perf record -o out/perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu", cwd = "test-mitsuba", depends-on = [
     "build-mitsuba",
