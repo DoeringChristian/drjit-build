@@ -15,12 +15,14 @@ cuda = "12.4"
 
 [tasks]
 hotspot = { cmd = "bin/hotspot-v1.5.1-x86_64.AppImage" }
-nsys-prof = { cmd = "nsys profile -o out/profile", cwd ="test-mitsuba", depends-on =["build-mitsuba"] }
+nsys-prof = { cmd = "nsys profile -o out/profile", cwd = "test-mitsuba", depends-on = [
+    "build-mitsuba",
+] }
 profile = { cmd = "perf record -o out/perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu", cwd = "test-mitsuba", depends-on = [
     "build-mitsuba",
 ] }
 # Mitsuba GCC
-sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
+sanitize-mitsuba = { cmd = "echo $PYTHONPATH && compute-sanitizer python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH", NV_NSIGHT_INJECTION_TRANSPORT_TYPE = "1" }, depends-on = [
     "build-mitsuba",
 ] }
 test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
@@ -29,7 +31,7 @@ test-mitsuba = { cmd = "echo $PYTHONPATH && python -m pytest", cwd = "mitsuba3/b
 profile-mitsuba = { cmd = "perf record -o perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
-hotspot-mitsuba = { cmd = "hotspot perf.data", cwd = "mitsuba3/build-mitsuba"}
+hotspot-mitsuba = { cmd = "hotspot perf.data", cwd = "mitsuba3/build-mitsuba" }
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
 ] }
@@ -116,7 +118,7 @@ furo = ">=2024.8.6,<2025"
 scripts = ["mitsuba3/build-mitsuba/setpath.sh"]
 
 [target.linux-64.activation.env]
-CMAKE_CXX_COMPILER_LAUNCHER="ccache"
+CMAKE_CXX_COMPILER_LAUNCHER = "ccache"
 CMAKE_PREFIX_PATH = "$CONDA_PREFIX"
 LD_LIBRARY_PATH = "$CONDA_PREFIX/lib"
 CUDA_TOOLKIT_ROOT_DIR = "$CONDA_PREFIX/lib"
