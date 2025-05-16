@@ -18,6 +18,9 @@ hotspot = { cmd = "bin/hotspot-v1.5.1-x86_64.AppImage" }
 nsys-prof = { cmd = "nsys profile -o out/profile", cwd = "test-mitsuba", depends-on = [
     "build-mitsuba",
 ] }
+ncu = { cmd = "ncu --open-in-ui --set full --config-file off --force-overwrite", depends-on = [
+    "build-mitsuba",
+] }
 profile = { cmd = "perf record -o out/perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu", cwd = "test-mitsuba", depends-on = [
     "build-mitsuba",
 ] }
@@ -34,6 +37,9 @@ profile-mitsuba = { cmd = "perf record -o perf.data --call-graph dwarf -e cycles
 hotspot-mitsuba = { cmd = "hotspot perf.data", cwd = "mitsuba3/build-mitsuba" }
 debug-mitsuba = { cmd = "echo $PYTHONPATH && gdb --args python -m pytest", cwd = "mitsuba3/build-mitsuba", env = { PYTHONPATH = "python:$PYTHONPATH" }, depends-on = [
     "build-mitsuba",
+] }
+build-mitsuba-docs = { cmd = "ninja mkdoc", cwd = "mitsuba3/build-mitsuba", depends-on = [
+    "configure-mitsuba",
 ] }
 build-mitsuba = { cmd = "ninja", cwd = "mitsuba3/build-mitsuba", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib" }, depends-on = [
     "configure-mitsuba",
@@ -58,6 +64,9 @@ test-drjit = { cmd = "python -m pytest", cwd = "mitsuba3/build-drjit", depends-o
 ] }
 debug-drjit = { cmd = "gdb --args python -m pytest", cwd = "mitsuba3/build-drjit", depends-on = [
     "build-drjit",
+] }
+build-drjit-docs = { cmd = "ninja mkdoc", cwd = "mitsuba3/build-drjit", depends-on = [
+    "configure-drjit",
 ] }
 build-drjit = { cmd = "ninja", cwd = "mitsuba3/build-drjit", depends-on = [
     "configure-drjit",
@@ -111,7 +120,7 @@ numpy = ">=2.1.2,<3"
 tqdm = ">=4.67.1,<5"
 
 cuda = "*"
-nsight-compute = ">=2025.1.1.0,<2026"
+nsight-compute = ">=2025.2.0,<2026"
 furo = ">=2024.8.6,<2025"
 
 [target.linux-64.activation]
@@ -134,4 +143,10 @@ torch = "*"
 torchvision = ">=0.20.1, <0.21"
 torchaudio = ">=2.5.1, <3"
 gpytoolbox = ">=0.3.0, <0.4"
+
+# docs
 sphinx = ">=8.2.3, <9"
+sphinxcontrib-katex = ">=0.9.10, <0.10"
+furo = "*"
+enum-tools = { version = ">=0.13.0, <0.14", extras = ["sphinx"] }
+sphinxcontrib-svg2pdfconverter = ">=1.3.0, <2"
