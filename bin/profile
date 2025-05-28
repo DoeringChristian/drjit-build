@@ -4,7 +4,7 @@ sudo nvidia-smi -pm 1
 sudo nvidia-smi --lock-gpu-clocks=2475
 sudo nvidia-smi --lock-memory-clocks=9501
 
-$@
+perf record -o perf.data --call-graph dwarf -e cycles -m 8M --aio -z --sample-cpu $@
 
 sudo nvidia-smi --reset-gpu-clocks; sudo nvidia-smi --reset-memory-clocks
 
