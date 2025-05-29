@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+configure-drjit
+
+cd $FLAKE_ROOT/mitsuba3/build-drjit
+
+ninja
