@@ -2,5 +2,5 @@
 
 cd $FLAKE_ROOT
 
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit -B mitsuba3/build-drjit
+cmake -DDRJIT_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ -B mitsuba3/build-drjit
 
