@@ -10,3 +10,10 @@ torchvision
 torchaudio
 gpytoolbox
 sphinx
+
+# For building docs
+enum-tools[sphinx]
+furo
+sphinxcontrib-katex
+sphinxcontrib-svg2pdfconverter
+typing_extensions
