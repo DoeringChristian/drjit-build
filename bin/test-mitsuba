@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+build-mitsuba
+
+cd $FLAKE_ROOT/mitsuba3/build-mitsuba
+
+source build-mitsuba/setpath.sh
+
+python -m pytest $@
