@@ -66,7 +66,8 @@
               export CXX="${gcc13}/bin/g++"
               export PATH="${gcc13}/bin:$PATH"
 
-              export LD_LIBRARY_PATH=${pkgs.linuxPackages.nvidia_x11}/lib
+              export LD_LIBRARY_PATH="/run/opengl-driver/lib:$LD_LIBRARY_PATH"
+              export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
               export LD_LIBRARY_PATH="${llvm.lib}/lib:$LD_LIBRARY_PATH"
 
               if [ ! -d .venv ]; then
@@ -74,7 +75,7 @@
               fi
 
               source .venv/bin/activate
-              pip install -r requirements.txt
+              pip install -q -r requirements.txt
 
               source mitsuba3/build-mitsuba/setpath.sh
             '';
