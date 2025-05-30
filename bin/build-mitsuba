@@ -4,4 +4,4 @@ configure-mitsuba
 
 cd $FLAKE_ROOT/mitsuba3/build-mitsuba
 
-ninja
+bear -- ninja

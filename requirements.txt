@@ -11,6 +11,8 @@ torchaudio
 gpytoolbox
 sphinx
 
+tqdm
+
 # For building docs
 enum-tools[sphinx]
 furo

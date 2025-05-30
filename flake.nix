@@ -27,6 +27,10 @@
         devShells = with pkgs; rec {
           default = mkShell {
             buildInputs = [
+              # Tools
+              bear
+              linuxPackages_latest.perf
+
               # Basics
               git
               gcc13
@@ -54,7 +58,6 @@
               embree
             ];
 
-            CMAKE_CXX_COMPILER_LAUNCHER = "ccache";
             # DRJIT_LIBLLVM_PATH = "${pkgs.llvm.lib}/lib/libLLVM.so";
             NIX_ENFORCE_NO_NATIVE = null;
 
@@ -66,9 +69,12 @@
               export CXX="${gcc13}/bin/g++"
               export PATH="${gcc13}/bin:$PATH"
 
-              export LD_LIBRARY_PATH="/run/opengl-driver/lib:$LD_LIBRARY_PATH"
-              export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
-              export LD_LIBRARY_PATH="${llvm.lib}/lib:$LD_LIBRARY_PATH"
+              export CUDA_PATH="${pkgs.cudatoolkit}"
+              export CLANGD_CUDA_INCLUDE="${pkgs.cudatoolkit}"
+
+              export LD_LIBRARY_PATH="/run/opengl-driver/lib:${zlib}/lib:${llvm.lib}/lib:${stdenv.cc.cc.lib}/lib:''${LD_LIBRARY_PATH:-}"
+
+			  export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
 
               if [ ! -d .venv ]; then
                 python -m venv .venv

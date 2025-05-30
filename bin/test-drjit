@@ -4,6 +4,6 @@ build-drjit
 
 cd $FLAKE_ROOT/mitsuba3/build-drjit
 
-source build-mitsuba/setpath.sh
+source $FLAKE_ROOT/mitsuba3/build-mitsuba/setpath.sh
 
 python -m pytest $@

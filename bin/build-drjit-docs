@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-configure-drjit
+build-drjit
 
 cd $FLAKE_ROOT/mitsuba3/build-drjit
 
