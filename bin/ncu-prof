@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ncu --open-in-ui --set full --config-file off --force-overwrite $@

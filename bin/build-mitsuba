@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+configure-mitsuba
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba
+
+ninja

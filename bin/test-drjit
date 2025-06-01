@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+build-drjit
+
+cd $PROJECT_ROOT/mitsuba3/build-drjit
+
+python -m pytest $@

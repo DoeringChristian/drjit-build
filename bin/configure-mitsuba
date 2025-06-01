@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cd $PROJECT_ROOT
+
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ -B mitsuba3/build-mitsuba

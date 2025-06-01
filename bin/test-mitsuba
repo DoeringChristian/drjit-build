@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+build-mitsuba
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba
+
+python -m pytest $@
