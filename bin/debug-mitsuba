@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+build-mitsuba
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba
+
+gdb --args python -m pytest $@
