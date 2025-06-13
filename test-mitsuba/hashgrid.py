@@ -3,10 +3,12 @@ from tqdm.auto import tqdm
 import imageio.v3 as iio
 import drjit as dr
 import drjit.nn as nn
+from drjit.hgrid import HashGridEncoding, SimplifiedPermutohedralEncoding
 from drjit.opt import Adam, GradScaler
 from drjit.auto.ad import Texture2f, TensorXf, TensorXf16, Float16, Float32, Array2f, Array3f
 
 dr.set_flag(dr.JitFlag.KernelHistory, True)
+# dr.set_log_level(dr.LogLevel.Trace)
 
 # Load a test image and construct a texture object
 ref = TensorXf(iio.imread("https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2024/06/wave-128.png") / 256)
@@ -16,6 +18,8 @@ tex = Texture2f(ref)
 dr.seed(0)
 
 def run(name: str):
+
+    n_levels = 2
 
     with dr.profile_range(f"run {name}"):
 
@@ -27,37 +31,27 @@ def run(name: str):
         }
 
         if name == "hashgrid":
-            encoding =  nn.HashGridEncoding(-1, 2, 2)
-        elif name == "permuto":
-            encoding =  nn.PermutohedralEncoding(-1, 2, 2)
+            encoding =  HashGridEncoding(2, n_levels, 2)
         elif name == "simplifiedpermuto":
-            encoding =  nn.SimplifiedPermutohedralEncoding(-1, 2, 2)
+            encoding = SimplifiedPermutohedralEncoding(2, n_levels, 2)
 
-        print(f"{name=}")
+        encoding = encoding.alloc(Float16)
 
         # Establish the network structure
         net = nn.Sequential(
-            encoding,
-            # nn.TriEncode(16, 0.2),
             nn.Cast(Float16),
-            # nn.Linear(-1, -1, bias=False),
-            # nn.LeakyReLU(),
-            # nn.Linear(-1, -1, bias=False),
-            # nn.LeakyReLU(),
-            # nn.Linear(-1, -1, bias=False),
-            # nn.LeakyReLU(),
             nn.Linear(-1, 3, bias=False),
             nn.Exp()
         )
 
         # Instantiate the network for a specific backend + input size
-        net = net.alloc(TensorXf16, 2)
+        net = net.alloc(TensorXf16, encoding.out_features)
 
         # Convert to training-optimal layout
         weights, net = nn.pack(net, layout='training')
 
         # Optimize a single-precision copy of the parameters
-        opt = Adam(lr=1e-3, params={'weights': Float32(weights)})
+        opt = Adam(lr=1e-3, params={"data": Float32(encoding.data), "weights": weights})
 
         # This is an adaptive mixed-precision (AMP) optimization, where a half
         # precision computation runs within a larger single-precision program.
@@ -72,7 +66,8 @@ def run(name: str):
         for i in iterator:
             with dr.profile_range("iteration"):
                 # Update network state from optimizer
-                weights[:] = Float16(opt['weights'])
+                weights[:] = Float16(opt["weights"])
+                encoding.data[:] = Float16(opt["data"])
 
                 # Generate jittered positions on [0, 1]^2
                 t = dr.arange(Float32, res)
@@ -81,7 +76,7 @@ def run(name: str):
                 dr.kernel_history_clear()
                 # Evaluate neural net + L2 loss
                 with dr.profile_range("fwd"):
-                    img = Array3f(net(nn.CoopVec(p)))
+                    img = Array3f(net(nn.CoopVec(encoding(p))))
                 with dr.profile_range("loss"):
                     loss = dr.squared_norm(tex.eval(p) - img)
 
@@ -108,7 +103,7 @@ def run(name: str):
         # Done optimizing, now let's plot the result
         t = dr.linspace(Float32, 0, 1, res)
         p = Array2f(dr.meshgrid(t, t))
-        img = Array3f(net(nn.CoopVec(p)))
+        img = Array3f(net(nn.CoopVec(encoding(p))))
 
         # Convert 'img' with shape 3 x (N*N) into a N x N x 3 tensor
         img = dr.reshape(TensorXf(img, flip_axes=True), (res, res, 3))
