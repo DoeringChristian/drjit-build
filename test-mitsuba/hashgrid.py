@@ -3,7 +3,7 @@ from tqdm.auto import tqdm
 import imageio.v3 as iio
 import drjit as dr
 import drjit.nn as nn
-from drjit.hgrid import HashGridEncoding, SimplifiedPermutohedralEncoding
+from drjit.hgrid import HashGridEncoding, PermutoEncoding
 from drjit.opt import Adam, GradScaler
 from drjit.auto.ad import Texture2f, TensorXf, TensorXf16, Float16, Float32, Array2f, Array3f
 
@@ -17,23 +17,26 @@ tex = Texture2f(ref)
  # Ensure consistent results when re-running the following
 dr.seed(0)
 
-def run(name: str):
+def run(config: dict):
+    name = config["name"]
 
-    n_levels = 2
+    n_levels = 16
 
     with dr.profile_range(f"run {name}"):
 
         result = {
             "name": name,
+            "it": [],
             "loss": [],
             "mse": [],
             "d_exec": 0
         }
 
-        if name == "hashgrid":
-            encoding =  HashGridEncoding(2, n_levels, 2)
-        elif name == "simplifiedpermuto":
-            encoding = SimplifiedPermutohedralEncoding(2, n_levels, 2)
+        extra = config.get("extra", {})
+        if config["encoding"] == "hashgrid":
+            encoding =  HashGridEncoding(2, n_levels, 2, **extra)
+        elif config["encoding"] == "permuto":
+            encoding = PermutoEncoding(2, n_levels, 2, **extra)
 
         encoding = encoding.alloc(Float16)
 
@@ -59,7 +62,7 @@ def run(name: str):
         scaler = GradScaler()
 
         res = 256
-        n = 1000
+        n = 10_000
         b = 100
 
         iterator = tqdm(range(b + n))
@@ -82,7 +85,11 @@ def run(name: str):
 
                     dr.eval(loss)
 
-                    result["loss"].append(loss[0])
+                    if i % 100 == 0:
+                        result["it"].append(i)
+                        result["loss"].append(loss[0])
+                    else:
+                        result["loss"][-1] += loss[0]
 
                 iterator.set_postfix({"loss": loss[0]})
 
@@ -114,7 +121,25 @@ def run(name: str):
 
         return result
 
-results = [run(name) for name in ["hashgrid", "simplifiedpermuto"]]
+configs = [
+    {
+        "name": "hashgrid",
+        "encoding": "hashgrid",
+    },
+    {
+        "name": "hashgrid-tcnn",
+        "encoding": "hashgrid",
+        "extra":{
+            "torchngp_compat": True,
+        }
+    },
+    {
+        "name": "permuto",
+        "encoding": "permuto",
+    },
+]
+
+results = [run(config) for config in configs]
 # results = [run(name) for name in ["permuto"]]
 # results = [run(name) for name in ["simplifiedpermuto"]]
 
@@ -124,7 +149,7 @@ for result in results:
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1, 2 + len(results))
 for result in results:
-    ax[0].plot(result["loss"], label = result["name"])
+    ax[0].plot(result["it"], result["loss"], label = result["name"])
     ax[0].legend()
     ax[0].set_yscale("log")
 ax[1].set_title("Reference")
