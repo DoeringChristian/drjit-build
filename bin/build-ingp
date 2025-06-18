@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+configure-ingp
+
+cd $PROJECT_ROOT/instant-ngp/
+
+cmake --build build --config RelWithDebInfo

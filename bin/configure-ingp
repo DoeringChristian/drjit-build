@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
+cd $PROJECT_ROOT
+
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=on -G Ninja -S instant-ngp -B instant-ngp/build
