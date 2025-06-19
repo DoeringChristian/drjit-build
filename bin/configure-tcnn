@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
+cd $PROJECT_ROOT/tiny-cuda-nn
+
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=on -G Ninja . -B build
