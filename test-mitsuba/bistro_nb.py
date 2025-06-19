@@ -22,7 +22,8 @@ Let's define a function that takes a scene as well as a seed, and renders the sc
 
 # %%
 def func(scene: mi.Scene, seed: mi.UInt32):
-    return mi.render(scene, spp = 1, seed = seed)
+    return mi.render(scene, spp=1, seed=seed)
+
 
 # %% [markdown]
 """
@@ -47,7 +48,14 @@ img = func(scene, seed)
 dr.sync_thread()
 end = time.time()
 
-print(f"Rendering the bistro scene took {end - start}s")
+duration = end - start
+# Kernel Execution time is stored in milliseconds
+execution_time = (
+    dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
+)
+
+
+print(f"Rendering the bistro scene took {duration}s")
 
 plt.imshow(mi.util.convert_to_bitmap(img))
 plt.axis("off")
@@ -59,17 +67,14 @@ We can actually check how long it took to execute the kernels.
 
 # %%
 
-# Kernel Execution time is stored in milliseconds
-execution_time = (
-    dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
-)
-
 print(f"Executing the kernels took just {execution_time}s")
+
 
 # %%
 @dr.freeze
 def frozen(scene: mi.Scene, seed: mi.UInt32):
-    return mi.render(scene, spp = 1, seed = seed)
+    return mi.render(scene, spp=1, seed=seed)
+
 
 # %% [markdown]
 """
@@ -106,17 +111,29 @@ img = frozen(scene, seed)
 dr.sync_thread()
 end = time.time()
 
-print(f"Rendering the scene while replaying the function took {end - start}s")
-
-plt.imshow(mi.util.convert_to_bitmap(img))
-plt.axis("off")
+duration_frozen = end - start
 
 # Kernel Execution time is stored in milliseconds
 execution_time_frozen = (
     dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
 )
 
+print(f"Rendering the scene while replaying the function took {duration_frozen}s")
+
+plt.imshow(mi.util.convert_to_bitmap(img))
+plt.axis("off")
+
+print(f"Executing the kernels took {execution_time_frozen}s")
+
 # %% [markdown]
 """
 Finally, we can plot a graph to visualize the performance gained from using frozen functions.
 """
+
+# %%
+plt.bar([0, 1], [execution_time, execution_time_frozen])
+plt.bar(
+    [0, 1],
+    [duration - execution_time, duration_frozen - execution_time_frozen],
+    bottom=[execution_time, execution_time_frozen],
+)
