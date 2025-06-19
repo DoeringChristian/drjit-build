@@ -5,14 +5,27 @@ import drjit as dr
 import drjit.nn as nn
 from drjit.hgrid import HashGridEncoding, PermutoEncoding
 from drjit.opt import Adam, GradScaler
-from drjit.auto.ad import Texture2f, TensorXf, TensorXf16, Float16, Float32, Array2f, Array3f
+from drjit.auto.ad import (
+    Texture2f,
+    TensorXf,
+    TensorXf16,
+    Float16,
+    Float32,
+    Array2f,
+    Array3f,
+    ArrayXf,
+)
 
 dr.set_flag(dr.JitFlag.KernelHistory, True)
 # dr.set_log_level(dr.LogLevel.Trace)
 
 # Load a test image and construct a texture object
-ref = TensorXf(iio.imread("https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2024/06/wave-128.png") / 256)
+ref = iio.imread("data/albert.jpg") / 256
+ref = ref.reshape([ref.shape[0], ref.shape[1], 1])
+ref = TensorXf(ref)
 tex = Texture2f(ref)
+
+height, width, channels = ref.shape
 
  # Ensure consistent results when re-running the following
 dr.seed(0)
@@ -43,7 +56,7 @@ def run(config: dict):
         # Establish the network structure
         net = nn.Sequential(
             nn.Cast(Float16),
-            nn.Linear(-1, 3, bias=False),
+            nn.Linear(-1, 1, bias=False),
             nn.Exp()
         )
 
@@ -61,7 +74,8 @@ def run(config: dict):
         # Gradient scaling is required to make this numerically well-behaved.
         scaler = GradScaler()
 
-        res = 256
+        batch_size = 2**16
+        # res = 256
         n = 10_000
         b = 100
 
@@ -73,23 +87,22 @@ def run(config: dict):
                 encoding.data[:] = Float16(opt["data"])
 
                 # Generate jittered positions on [0, 1]^2
-                t = dr.arange(Float32, res)
-                p = (Array2f(dr.meshgrid(t, t)) + dr.rand(Array2f, (2, res * res))) / res
+                p = dr.rand(Array2f, (2, batch_size)) * Array2f(width, height)
+                # t = dr.arange(Float32, res)
+                # p = (Array2f(dr.meshgrid(t, t)) + dr.rand(Array2f, (2, res * res))) / res
 
                 dr.kernel_history_clear()
                 # Evaluate neural net + L2 loss
                 with dr.profile_range("fwd"):
-                    img = Array3f(net(nn.CoopVec(encoding(p))))
+                    img = ArrayXf(net(nn.CoopVec(encoding(p))))
                 with dr.profile_range("loss"):
-                    loss = dr.squared_norm(tex.eval(p) - img)
+                    img_ref = ArrayXf(tex.eval(p))
+                    loss = dr.squared_norm(img_ref - img)
 
                     dr.eval(loss)
 
-                    if i % 100 == 0:
-                        result["it"].append(i)
-                        result["loss"].append(loss[0])
-                    else:
-                        result["loss"][-1] += loss[0]
+                    result["it"].append(i)
+                    result["loss"].append(loss[0])
 
                 iterator.set_postfix({"loss": loss[0]})
 
@@ -108,12 +121,13 @@ def run(config: dict):
                     scaler.step(opt)
 
         # Done optimizing, now let's plot the result
-        t = dr.linspace(Float32, 0, 1, res)
-        p = Array2f(dr.meshgrid(t, t))
-        img = Array3f(net(nn.CoopVec(encoding(p))))
+        u = dr.linspace(Float32, 0, 1, width)
+        v = dr.linspace(Float32, 0, 1, height)
+        p = Array2f(dr.meshgrid(u, v))
+        img = ArrayXf(net(nn.CoopVec(encoding(p))))
 
         # Convert 'img' with shape 3 x (N*N) into a N x N x 3 tensor
-        img = dr.reshape(TensorXf(img, flip_axes=True), (res, res, 3))
+        img = dr.reshape(TensorXf(img, flip_axes=True), (height, width, channels))
 
         result["img"] = img
 
@@ -133,10 +147,10 @@ configs = [
             "torchngp_compat": True,
         }
     },
-    {
-        "name": "permuto",
-        "encoding": "permuto",
-    },
+    # {
+    #     "name": "permuto",
+    #     "encoding": "permuto",
+    # },
 ]
 
 results = [run(config) for config in configs]
