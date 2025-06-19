@@ -1,4 +1,5 @@
 
+from copy import deepcopy
 from tqdm.auto import tqdm
 import imageio.v3 as iio
 import drjit as dr
@@ -15,6 +16,16 @@ from drjit.auto.ad import (
     Array3f,
     ArrayXf,
 )
+import collections
+
+
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
 
 dr.set_flag(dr.JitFlag.KernelHistory, True)
 # dr.set_log_level(dr.LogLevel.Trace)
@@ -30,10 +41,25 @@ height, width, channels = ref.shape
  # Ensure consistent results when re-running the following
 dr.seed(0)
 
-def run(config: dict):
-    name = config["name"]
+def validate(result, net, encoding):
+    # Done optimizing, now let's plot the result
+    u = dr.linspace(Float32, 0, 1, width)
+    v = dr.linspace(Float32, 0, 1, height)
+    p = Array2f(dr.meshgrid(u, v))
+    img = ArrayXf(net(nn.CoopVec(encoding(p))))
 
-    n_levels = 16
+    img = dr.reshape(TensorXf(img, flip_axes=True), (height, width, channels))
+
+    mse = dr.mean(dr.square(img.array - ref.array), axis = None)
+    result["mse"].append(mse)
+
+def run(config: dict):
+
+    tmp = deepcopy(default_config)
+    update(tmp, config)
+    config = tmp
+
+    name = config["name"]
 
     with dr.profile_range(f"run {name}"):
 
@@ -45,11 +71,11 @@ def run(config: dict):
             "d_exec": 0
         }
 
-        extra = config.get("extra", {})
-        if config["encoding"] == "hashgrid":
-            encoding =  HashGridEncoding(2, n_levels, 2, **extra)
-        elif config["encoding"] == "permuto":
-            encoding = PermutoEncoding(2, n_levels, 2, **extra)
+        encoding = config["encoding"]
+        if encoding["type"] == "hashgrid":
+            encoding =  HashGridEncoding(2, **encoding["config"])
+        elif encoding["type"] == "permuto":
+            encoding = PermutoEncoding(2, **encoding["config"])
 
         encoding = encoding.alloc(Float16)
 
@@ -74,9 +100,9 @@ def run(config: dict):
         # Gradient scaling is required to make this numerically well-behaved.
         scaler = GradScaler()
 
-        batch_size = 2**16
-        n = 1_000
-        b = 100
+        batch_size = config["batch_size"]
+        n = config["iterations"]
+        b = config["burnin"]
 
         iterator = tqdm(range(b + n))
         for i in iterator:
@@ -100,9 +126,6 @@ def run(config: dict):
 
                     dr.eval(loss)
 
-                    result["it"].append(i)
-                    result["loss"].append(loss[0])
-
                 iterator.set_postfix({"loss": loss[0]})
 
                 # Mixed-precision training: take suitably scaled steps
@@ -118,6 +141,12 @@ def run(config: dict):
 
                 with dr.profile_range("step"):
                     scaler.step(opt)
+
+                if i % config["validation_interval"] == 0:
+                    validate(result, net, encoding)
+
+                    result["it"].append(i)
+                    result["loss"].append(loss[0])
 
         # Done optimizing, now let's plot the result
         u = dr.linspace(Float32, 0, 1, width)
@@ -137,14 +166,16 @@ def run(config: dict):
 configs = [
     {
         "name": "hashgrid",
-        "encoding": "hashgrid",
+        "encoding": {"type": "hashgrid"},
     },
     {
         "name": "hashgrid-tcnn",
-        "encoding": "hashgrid",
-        "extra":{
-            "torchngp_compat": True,
-        }
+        "encoding": {
+            "type": "hashgrid",
+            "config": {
+                "torchngp_compat": True,
+            },
+        },
     },
     # {
     #     "name": "permuto",
@@ -152,25 +183,47 @@ configs = [
     # },
 ]
 
+default_config = {
+    "batch_size": 2**16,
+    "iterations": 1_000,
+    "validation_interval": 100,
+    "burnin": 100,
+    "encoding": {
+        "config": {
+            "n_levels": 16,
+            "n_features_per_level": 2,
+        }
+    },
+}
+
 results = [run(config) for config in configs]
 # results = [run(name) for name in ["permuto"]]
 # results = [run(name) for name in ["simplifiedpermuto"]]
 
 for result in results:
     print(f"name={result['name']}, d_exec={result['d_exec']}")
+print(f"{result=}")
 
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots(1, 2 + len(results))
+fig, ax = plt.subplots(2, 1 + len(results))
 for result in results:
-    ax[0].plot(result["it"], result["loss"], label = result["name"])
-    ax[0].legend()
-    ax[0].set_yscale("log")
-ax[1].set_title("Reference")
-ax[1].imshow(ref)
+    ax[0][0].plot(result["it"], result["loss"], label = result["name"])
+    ax[0][0].legend()
+    ax[0][0].set_yscale("log")
+ax[0][0].set_title("loss")
+
+for result in results:
+    ax[0][1].plot(result["it"], result["mse"], label = result["name"])
+    ax[0][1].legend()
+    ax[0][1].set_yscale("log")
+ax[0][1].set_title("MSE")
+
+ax[1][0].set_title("Reference")
+ax[1][0].imshow(ref)
 for i in range(len(results)):
     result = results[i]
-    ax[2+i].set_title(result["name"])
-    ax[2+i].imshow(result["img"])
+    ax[1][1+i].set_title(result["name"])
+    ax[1][1+i].imshow(result["img"])
 plt.show()
 
 # import matplotlib.pyplot as plt
