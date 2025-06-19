@@ -16,16 +16,7 @@ from drjit.auto.ad import (
     Array3f,
     ArrayXf,
 )
-import collections
-
-
-def update(d, u):
-    for k, v in u.items():
-        if isinstance(v, collections.abc.Mapping):
-            d[k] = update(d.get(k, {}), v)
-        else:
-            d[k] = v
-    return d
+from omegaconf import OmegaConf
 
 dr.set_flag(dr.JitFlag.KernelHistory, True)
 # dr.set_log_level(dr.LogLevel.Trace)
@@ -54,12 +45,12 @@ def validate(result, net, encoding):
     result["mse"].append(mse)
 
 def run(config: dict):
+    cfg = OmegaConf.create(default_config)
+    cfg = OmegaConf.merge(cfg, OmegaConf.create(config))
 
-    tmp = deepcopy(default_config)
-    update(tmp, config)
-    config = tmp
+    print(f"{OmegaConf.to_yaml(cfg)}")
 
-    name = config["name"]
+    name = cfg.name
 
     with dr.profile_range(f"run {name}"):
 
@@ -71,11 +62,11 @@ def run(config: dict):
             "d_exec": 0
         }
 
-        encoding = config["encoding"]
+        encoding = cfg.encoding
         if encoding["type"] == "hashgrid":
-            encoding =  HashGridEncoding(2, **encoding["config"])
+            encoding =  HashGridEncoding(2, **encoding.config)
         elif encoding["type"] == "permuto":
-            encoding = PermutoEncoding(2, **encoding["config"])
+            encoding = PermutoEncoding(2, **encoding.config)
 
         encoding = encoding.alloc(Float16)
 
@@ -100,9 +91,9 @@ def run(config: dict):
         # Gradient scaling is required to make this numerically well-behaved.
         scaler = GradScaler()
 
-        batch_size = config["batch_size"]
-        n = config["iterations"]
-        b = config["burnin"]
+        batch_size = cfg.batch_size
+        n = cfg.iterations
+        b = cfg.burnin
 
         iterator = tqdm(range(b + n))
         for i in iterator:
@@ -142,7 +133,7 @@ def run(config: dict):
                 with dr.profile_range("step"):
                     scaler.step(opt)
 
-                if i % config["validation_interval"] == 0:
+                if i % cfg.validation_interval == 0:
                     validate(result, net, encoding)
 
                     result["it"].append(i)
@@ -202,7 +193,6 @@ results = [run(config) for config in configs]
 
 for result in results:
     print(f"name={result['name']}, d_exec={result['d_exec']}")
-print(f"{result=}")
 
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(2, 1 + len(results))
