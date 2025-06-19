@@ -75,8 +75,7 @@ def run(config: dict):
         scaler = GradScaler()
 
         batch_size = 2**16
-        # res = 256
-        n = 10_000
+        n = 1_000
         b = 100
 
         iterator = tqdm(range(b + n))
@@ -87,7 +86,7 @@ def run(config: dict):
                 encoding.data[:] = Float16(opt["data"])
 
                 # Generate jittered positions on [0, 1]^2
-                p = dr.rand(Array2f, (2, batch_size)) * Array2f(width, height)
+                p = dr.rand(Array2f, (2, batch_size))
                 # t = dr.arange(Float32, res)
                 # p = (Array2f(dr.meshgrid(t, t)) + dr.rand(Array2f, (2, res * res))) / res
 
