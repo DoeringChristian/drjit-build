@@ -39,7 +39,9 @@ def validate(result, net, encoding):
     p = Array2f(dr.meshgrid(u, v))
     img = ArrayXf(net(nn.CoopVec(encoding(p))))
 
-    img = dr.reshape(TensorXf(img, flip_axes=True), (height, width, channels))
+    img = dr.reshape(
+        TensorXf(dr.clamp(img, 0.0, 1.0), flip_axes=True), (height, width, channels)
+    )
 
     mse = dr.mean(dr.square(img.array - ref.array), axis = None)
     result["mse"].append(mse)
@@ -63,9 +65,9 @@ def run(config: dict):
         }
 
         encoding = cfg.encoding
-        if encoding["type"] == "hashgrid":
+        if encoding.type == "hashgrid":
             encoding =  HashGridEncoding(2, **encoding.config)
-        elif encoding["type"] == "permuto":
+        elif encoding.type == "permuto":
             encoding = PermutoEncoding(2, **encoding.config)
 
         encoding = encoding.alloc(Float16)
@@ -74,7 +76,6 @@ def run(config: dict):
         net = nn.Sequential(
             nn.Cast(Float16),
             nn.Linear(-1, 1, bias=False),
-            nn.Exp()
         )
 
         # Instantiate the network for a specific backend + input size
@@ -84,7 +85,7 @@ def run(config: dict):
         weights, net = nn.pack(net, layout='training')
 
         # Optimize a single-precision copy of the parameters
-        opt = Adam(lr=1e-3, params={"data": Float32(encoding.data), "weights": weights})
+        opt = Adam(lr=cfg.lr, params={"data": Float32(encoding.data), "weights": weights})
 
         # This is an adaptive mixed-precision (AMP) optimization, where a half
         # precision computation runs within a larger single-precision program.
@@ -117,7 +118,7 @@ def run(config: dict):
 
                     dr.eval(loss)
 
-                iterator.set_postfix({"loss": loss[0]})
+                iterator.set_postfix({"loss": f"{loss[0]:.8f}"})
 
                 # Mixed-precision training: take suitably scaled steps
                 with dr.profile_range("bwd"):
@@ -176,13 +177,15 @@ configs = [
 
 default_config = {
     "batch_size": 2**16,
-    "iterations": 1_000,
+    "iterations": 5_000,
     "validation_interval": 100,
     "burnin": 100,
+    "lr": 0.01,
     "encoding": {
         "config": {
             "n_levels": 16,
             "n_features_per_level": 2,
+            "base_resolution": 16,
         }
     },
 }
