@@ -33,7 +33,9 @@ clangxx = ">=19.1.1,<20"
 libcxx = ">=19.1.1,<20"
 libcxx-devel = ">=19.1.1,<20"
 libcxxabi = ">=19.1.1,<20"
+llvm = ">=19.1.4,<20"
 llvmdev = ">=19.1.4,<20"
+compiler-rt = ">=19.1.6,<20" # provides asan
 
 lld = ">=19.1.4,<20"
 mold = ">=2.35.1,<3"
