@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+CC=clang
+CXX=clang++
+
+configure-mitsuba-clang
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba-clang
+
+ninja

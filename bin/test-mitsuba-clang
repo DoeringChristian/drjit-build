@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+build-mitsuba-clang
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba-clang
+
+python -m pytest $@
