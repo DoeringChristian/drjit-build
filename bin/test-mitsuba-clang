@@ -5,4 +5,6 @@ build-mitsuba-clang
 
 cd $PROJECT_ROOT/mitsuba3/build-mitsuba-clang
 
+source setpath.sh
+
 python -m pytest $@
