@@ -79,7 +79,7 @@ class Model:
     def __init__(self, scene: mi.Scene, width: int = 32, hidden: int = 2) -> None:
         self.scene = scene
 
-        self.encoding = hg.HashGridEncoding(3, n_levels=16, n_features_per_level=2)
+        self.encoding = hg.HashGridEncoding(3, n_levels=16, n_features_per_level=2, torchngp_compat = True)
 
         n_input_features = self.encoding.out_features  # encoding
         n_input_features += 3  # p
