@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-CC=clang
-CXX=clang++
+CC=clang-17
+CXX=clang++-17
 
 configure-mitsuba-clang
 

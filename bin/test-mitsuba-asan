@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+build-mitsuba-asan
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba-asan
+
+source setpath.sh
+
+LD_PRELOAD="$(gcc -print-file-name=libasan.so) $(gcc -print-file-name=libstdc++.so)" python -m pytest $@

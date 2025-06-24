@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+configure-mitsuba-asan
+
+ASAN_OPTIONS=protect_shadow_gap=0:replace_intrin=0:detect_leaks=0
+
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba-asan
+
+ninja
