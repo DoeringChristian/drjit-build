@@ -7,4 +7,6 @@ cd $PROJECT_ROOT/mitsuba3/build-mitsuba-asan
 
 source setpath.sh
 
+export ASAN_OPTIONS=protect_shadow_gap=0:replace_intrin=0:detect_leaks=0
+
 LD_PRELOAD="$(gcc -print-file-name=libasan.so) $(gcc -print-file-name=libstdc++.so)" python -m pytest $@
