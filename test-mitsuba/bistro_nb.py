@@ -4,6 +4,12 @@
 # In this book, you will learn how to use Dr.Jit's `freeze` decorator to improve
 # the performance of rendering a complex scene.
 
+# %%[markdown]
+# First, we can import Mitsuba along with Dr.Jit and matplotlib. We also have to
+# tell Mitsuba, which variant we want to use. Depending on your system, your GPU
+# might not have enough VRAM. In that case, remove the "cuda_ad_rgb" variant.
+# To record accurate kernel timings, we also enable Dr.Jit's kernel history.
+
 
 # %%
 import matplotlib.pyplot as plt
