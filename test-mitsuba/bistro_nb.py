@@ -1,14 +1,9 @@
 # %% [markdown]
-"""
-# Frozen Functions
+# # Frozen Functions
+#
+# In this book, you will learn how to use Dr.Jit's `freeze` decorator to improve
+# the performance of rendering a complex scene.
 
-In this book, you will
-
-1. learn how to use Dr.Jit's `freeze` decorator, to improve
-   the performance when rendering a complex scene.
-2. learn how to profile the execution time of Dr.Jit kernels.
-
-"""
 
 # %%
 import matplotlib.pyplot as plt
@@ -21,7 +16,10 @@ mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")
 dr.set_flag(dr.JitFlag.KernelHistory, True)
 
 # %% [markdown]
-# Let's define a function that takes a scene as well as a seed, and renders the scene with 1 sample per pixel.
+# Let's define a function that takes a scene as well as a seed, and renders the
+# scene with 1 sample per pixel. The seed can be either a Python `int`, or a Mitsuba
+# `mi.UInt32`. When changing a Python `int` in the arguments of a frozen function,
+# it would lead to the function being re-traced. Therefore, we use a `mi.UInt32` type.
 
 
 # %%
@@ -31,7 +29,7 @@ def func(scene: mi.Scene, seed: mi.UInt32):
 
 # %% [markdown]
 # We can now load a complex scene. The bistro scene for example, contains many different
-# BSDFs, which will all have to be traced when not using frozen functions.
+# shapes and materials which have to be traced when to compile the kernel.
 
 # %%
 scene = mi.load_file("data/bistro/scene.xml")
@@ -39,9 +37,12 @@ scene = mi.load_file("data/bistro/scene.xml")
 # %% [markdown]
 # Rendering the scene, can be expensive, as the following code shows.
 # We also measure the time, that the GPU spent executing kernels on the GPU, using
-# Dr.Jit's kernel history. In a realistic application, some of the tracing cost can
+# Dr.Jit's kernel history. In some applications, part of the tracing cost can
 # be hidden by kernel execution, if the code is designed in a way, that allows asynchronous
 # execution on the GPU.
+# We initialize the seed with `dr.opaque`, which will directly allocate and initialize
+# memory on the GPU. When freezing the function, this will reduce the number of
+# times the function has to be recorded before being able to replay it.
 
 # %%
 seed = dr.opaque(mi.UInt32, 0)
@@ -67,18 +68,25 @@ plt.imshow(mi.util.convert_to_bitmap(img))
 plt.axis("off")
 
 # %% [markdown]
-# To use the frozen function feature, we define a new function, that we can annotate
-# with `@dr.freeze`.
+# To use the frozen function decorator, we can either define a new function, that we annotate with `@dr.freeze`
+# ```python
+# @dr.freeze
+# def frozen(scene: mi.Scene, seed: mi.UInt32):
+#     return mi.render(scene, spp=1, seed=seed)
+# ```
+# or we can create a new frozen function object from an existing function by calling
 
 
 # %%
-@dr.freeze
-def frozen(scene: mi.Scene, seed: mi.UInt32):
-    return mi.render(scene, spp=1, seed=seed)
+frozen = dr.freeze(func)
 
 
 # %% [markdown]
-# The first call to the frozen function will take longer than calling the function directly.
+# Multiple frozen functions can be created, referencing the same function. They
+# will all have their own separate recording cache.
+#
+# Now we can call the frozen function, recording the kernels launched by `func`.
+# The first time this will take longer than calling the function directly, since
 # Dr.Jit has to traverse the inputs, record kernel calls, and construct outputs.
 
 # %%
@@ -94,10 +102,23 @@ print(f"Rendering the scene while recording the frozen function took {end - star
 plt.imshow(mi.util.convert_to_bitmap(img))
 plt.axis("off")
 
+# %% [markdown]
+# We can check, that the function has been recorded, and that the recording is
+# stored in the frozen function callable, using the `n_recordings` and `n_cached_recordings`
+# properties.
+
+# %%
+assert frozen.n_recordings == 1
+assert frozen.n_cached_recordings == 1
+
 
 # %% [markdown]
 # Subsequent calls to the function will be faster, since the kernels are simply replayed,
-# after analyzing the inputs.
+# after analyzing the inputs. Since we provided an opaque seed value, we are able
+# to change it, without having to re-trace the function. If it was initialized as
+# a literal (i.e. `seed = mi.UInt32(0)`), the second call would determine the literals
+# that changed, and make them opaque automatically (auto opaque feature). Subsequent
+# calls would then replay the function, without re-tracing it.
 
 # %%
 seed = dr.opaque(mi.UInt32, 1)
@@ -121,6 +142,14 @@ plt.imshow(mi.util.convert_to_bitmap(img))
 plt.axis("off")
 
 print(f"Executing the kernels took {execution_time_frozen}s")
+
+# %% [markdown]
+# To verify, that the function has not been re-traced, we can again use `n_recordings`,
+# which gets incremented whenever the function is re-traced.
+
+# %%
+assert frozen.n_recordings == 1
+assert frozen.n_cached_recordings == 1
 
 # %% [markdown]
 # Finally, we can plot a graph to visualize the performance gained from using frozen functions.
