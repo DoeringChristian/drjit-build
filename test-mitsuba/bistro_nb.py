@@ -10,6 +10,8 @@
 # might not have enough VRAM. In that case, remove the "cuda_ad_rgb" variant.
 # To record accurate kernel timings, we also enable Dr.Jit's kernel history.
 
+# %% [markdown]
+# ## Imports
 
 # %%
 import matplotlib.pyplot as plt
@@ -22,6 +24,8 @@ mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")
 dr.set_flag(dr.JitFlag.KernelHistory, True)
 
 # %% [markdown]
+# ## Rendering a Scene
+#
 # Let's define a function that takes a scene as well as a seed, and renders the
 # scene with 1 sample per pixel. The seed can be either a Python `int`, or a Mitsuba
 # `mi.UInt32`. When changing a Python `int` in the arguments of a frozen function,
@@ -74,13 +78,15 @@ plt.imshow(mi.util.convert_to_bitmap(img))
 plt.axis("off")
 
 # %% [markdown]
+# ## Creating a Frozen Function
+#
 # To use the frozen function decorator, we can either define a new function, that we annotate with `@dr.freeze`
 # ```python
 # @dr.freeze
 # def frozen(scene: mi.Scene, seed: mi.UInt32):
 #     return mi.render(scene, spp=1, seed=seed)
 # ```
-# or we can create a new frozen function object from an existing function by calling
+# or we can create a new frozen function instance from an existing function by calling
 
 
 # %%
@@ -158,7 +164,9 @@ assert frozen.n_recordings == 1
 assert frozen.n_cached_recordings == 1
 
 # %% [markdown]
-# Finally, we can plot a graph to visualize the performance gained from using frozen functions.
+# ## Results
+#
+# Finally, we can plot a graph to visualize the performance gained by using frozen functions.
 
 # %%
 b = plt.bar(
