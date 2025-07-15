@@ -42,7 +42,7 @@ def func(scene: mi.Scene, seed: mi.UInt32):
 # shapes and materials which have to be traced when to compile the kernel.
 
 # %%
-scene = mi.load_file("data/bistro/scene.xml")
+scene = mi.load_file("data/bistro/scene.xml", resx=1920, resy=1080)
 
 # %% [markdown]
 # Rendering the scene, can be expensive, as the following code shows.
@@ -71,11 +71,9 @@ execution_time = (
 
 
 print(f"Rendering the bistro scene took {duration}s")
-
 print(f"Executing the kernels took just {execution_time}s")
 
-plt.imshow(mi.util.convert_to_bitmap(img))
-plt.axis("off")
+mi.Bitmap(img)
 
 # %% [markdown]
 # ## Creating a Frozen Function
@@ -111,8 +109,7 @@ end = time.time()
 
 print(f"Rendering the scene while recording the frozen function took {end - start}s")
 
-plt.imshow(mi.util.convert_to_bitmap(img))
-plt.axis("off")
+mi.Bitmap(img)
 
 # %% [markdown]
 # We can check, that the function has been recorded, and that the recording is
@@ -149,11 +146,9 @@ execution_time_frozen = (
 )
 
 print(f"Rendering the scene while replaying the function took {duration_frozen}s")
-
-plt.imshow(mi.util.convert_to_bitmap(img))
-plt.axis("off")
-
 print(f"Executing the kernels took {execution_time_frozen}s")
+
+mi.Bitmap(img)
 
 # %% [markdown]
 # To verify, that the function has not been re-traced, we can again use `n_recordings`,

@@ -9,7 +9,7 @@
 <!-- Camera and Rendering Parameters -->
 
 	<integrator type="path" id="elm__0" name="elm__0">
-		<integer name="max_depth" value="128"/>
+		<integer name="max_depth" value="12"/>
 	</integrator>
 	<sensor type="perspective" id="elm__2" name="elm__2">
 		<string name="fov_axis" value="x"/>
@@ -3074,13 +3074,14 @@
 
 <!-- Emitters -->
 
-	<emitter type = "constant" id = "elem__1"/>
-	<!-- <emitter type="directional" id="elm__1" name="elm__1"> -->
-	<!-- 	<rgb value="110.100006 87.414825 56.481304" name="irradiance"/> -->
-	<!-- 	<transform name="to_world"> -->
-	<!-- 		<matrix value="0.016000 0.000000 0.000000 0.000000 0.000000 -0.007706 -0.014022 29.527479 0.000000 0.014022 -0.007706 16.228107 0.000000 0.000000 0.000000 1.000000"/> -->
-	<!-- 	</transform> -->
-	<!-- </emitter> -->
+	<emitter type="directional" id="elm__1" name="elm__1">
+		<rgb value="110.100006 87.414825 56.481304" name="irradiance"/>
+		<transform name="to_world">
+			<rotate x="1" angle="120"/>
+			<rotate y="1" angle="0"/>
+			<rotate z="1" angle="0"/>
+		</transform>
+	</emitter>
 
 <!-- Shapes -->
 
