@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+sudo nvidia-smi -pm 1
+sudo nvidia-smi --lock-gpu-clocks=1215
+sudo nvidia-smi --lock-memory-clocks=810
+
+$@
+
+sudo nvidia-smi --reset-gpu-clocks; sudo nvidia-smi --reset-memory-clocks
+
