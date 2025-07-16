@@ -49,6 +49,7 @@ scene = mi.load_file("data/bistro/scene.xml", resx=1920, resy=1080)
 # Rendering the scene, can be expensive, as the following code shows.
 # We also measure the time, that the GPU spent executing kernels on the GPU, using
 # Dr.Jit's kernel history. To get more accurate measurements, we render the scene 100 times.
+# GPU frequencies can vary a lot, and skew the results, therefore it is advisable to lock the gpu frequencies.
 # In some applications, part of the tracing cost can be hidden by kernel execution,
 # if the code is designed in a way, that allows asynchronous execution on the GPU.
 # We initialize the seed with `dr.opaque`, which will directly allocate and initialize
