@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import mitsuba as mi
 import drjit as dr
 import time
+import tqdm
 
 mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")
 
@@ -47,31 +48,51 @@ scene = mi.load_file("data/bistro/scene.xml", resx=1920, resy=1080)
 # %% [markdown]
 # Rendering the scene, can be expensive, as the following code shows.
 # We also measure the time, that the GPU spent executing kernels on the GPU, using
-# Dr.Jit's kernel history. In some applications, part of the tracing cost can
-# be hidden by kernel execution, if the code is designed in a way, that allows asynchronous
-# execution on the GPU.
+# Dr.Jit's kernel history. To get more accurate measurements, we render the scene 100 times.
+# In some applications, part of the tracing cost can be hidden by kernel execution,
+# if the code is designed in a way, that allows asynchronous execution on the GPU.
 # We initialize the seed with `dr.opaque`, which will directly allocate and initialize
 # memory on the GPU. When freezing the function, this will reduce the number of
 # times the function has to be recorded before being able to replay it.
 
 # %%
-seed = dr.opaque(mi.UInt32, 0)
 
-dr.kernel_history_clear()
-start = time.time()
-img = func(scene, seed)
-dr.sync_thread()
-end = time.time()
+# Render the scene n times, to calculate a better estimate of the performance
+n = 100
+time_iter = 0
+time_exec = 0
+time_asm = 0
+for i in tqdm.tqdm(range(n)):
+    dr.kernel_history_clear()
+    time_iter -= time.time() / n
 
-duration = end - start
-# Kernel Execution time is stored in milliseconds
-execution_time = (
-    dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
-)
+    seed = dr.opaque(mi.UInt32, i)
+    img = func(scene, seed)
+    dr.eval(img)
+    dr.sync_thread()
+
+    time_iter += time.time() / n
+
+    # Kernel assembly and execution time is stored in milliseconds
+    history = dr.kernel_history()
+    time_exec += (
+        dr.sum([kernel["execution_time"] for kernel in history]) / 1000
+    ) / n
+    time_asm += (
+        dr.sum(
+            [
+                kernel["codegen_time"]
+                for kernel in history
+                if kernel["type"] == dr.KernelType.JIT
+            ]
+        )
+        / 1000
+    ) / n
 
 
-print(f"Rendering the bistro scene took {duration}s")
-print(f"Executing the kernels took just {execution_time}s")
+print(f"Rendering one frame of the bistro scene took {time_iter}s")
+print(f"Assembling the kernels took {time_exec}s")
+print(f"Executing the kernels took just {time_exec}s")
 
 mi.Bitmap(img)
 
@@ -132,21 +153,27 @@ assert frozen.n_cached_recordings == 1
 # %%
 seed = dr.opaque(mi.UInt32, 1)
 
-dr.kernel_history_clear()
-start = time.time()
-img = frozen(scene, seed)
-dr.sync_thread()
-end = time.time()
+time_frozen_iter = 0
+time_frozen_exec = 0
 
-duration_frozen = end - start
+for i in tqdm.tqdm(range(n)):
+    dr.kernel_history_clear()
+    time_frozen_iter -= time.time() / n
 
-# Kernel Execution time is stored in milliseconds
-execution_time_frozen = (
-    dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
-)
+    seed = dr.opaque(mi.UInt32, i)
+    img = frozen(scene, seed)
+    dr.eval(img)
+    dr.sync_thread()
 
-print(f"Rendering the scene while replaying the function took {duration_frozen}s")
-print(f"Executing the kernels took {execution_time_frozen}s")
+    time_frozen_iter += time.time() / n
+
+    # Kernel Execution time is stored in milliseconds
+    time_frozen_exec += (
+        dr.sum([kernel["execution_time"] for kernel in dr.kernel_history()]) / 1000
+    ) / n
+
+print(f"Rendering the scene while replaying the function took {time_frozen_iter}s")
+print(f"Executing the kernels took {time_frozen_exec}s")
 
 mi.Bitmap(img)
 
@@ -165,15 +192,18 @@ assert frozen.n_cached_recordings == 1
 
 # %%
 b = plt.bar(
-    ["Normal", "Frozen"], [execution_time, execution_time_frozen], label="kernel time"
+    ["Normal", "Frozen"], [time_exec, time_frozen_exec], label="kernel time", color = "C0"
 )
-plt.bar_label(b, fmt="{:0.3f}s")
+plt.bar_label(b, fmt="{:0.3f}s", label_type = "center")
+b = plt.bar([0], [time_asm], bottom=[time_exec], label="assembly", color="C2")
+plt.bar_label(b, fmt = "{:0.3f}s", label_type = "center")
 b = plt.bar(
     [0, 1],
-    [duration - execution_time, duration_frozen - execution_time_frozen],
-    bottom=[execution_time, execution_time_frozen],
+    [time_iter - time_exec - time_asm, time_frozen_iter - time_frozen_exec],
+    bottom=[time_exec + time_asm, time_frozen_exec],
     label="overhead",
+    color="C1",
 )
-plt.bar_label(b, fmt="{:0.3f}s")
+plt.bar_label(b, fmt="{:0.3f}s", label_type = "center")
 plt.ylabel("Time in s")
 plt.legend()
