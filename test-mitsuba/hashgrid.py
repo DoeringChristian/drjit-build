@@ -3,7 +3,6 @@ from tqdm.auto import tqdm
 import imageio.v3 as iio
 import drjit as dr
 import drjit.nn as nn
-from drjit.hgrid import HashGridEncoding, SimplifiedPermutohedralEncoding
 from drjit.opt import Adam, GradScaler
 from drjit.auto.ad import Texture2f, TensorXf, TensorXf16, Float16, Float32, Array2f, Array3f
 
@@ -31,11 +30,13 @@ def run(name: str):
         }
 
         if name == "hashgrid":
-            encoding =  HashGridEncoding(2, n_levels, 2)
-        elif name == "simplifiedpermuto":
-            encoding = SimplifiedPermutohedralEncoding(2, n_levels, 2)
-
-        encoding = encoding.alloc(Float16)
+            encoding = nn.HashGridEncoding(
+                Float16, 2, n_levels=n_levels, n_features_per_level=2
+            )
+        elif name == "permuto":
+            encoding = nn.PermutoEncoding(
+                Float16, 2, n_levels=n_levels, n_features_per_level=2
+            )
 
         # Establish the network structure
         net = nn.Sequential(
@@ -114,7 +115,7 @@ def run(name: str):
 
         return result
 
-results = [run(name) for name in ["hashgrid", "simplifiedpermuto"]]
+results = [run(name) for name in ["hashgrid", "permuto"]]
 # results = [run(name) for name in ["permuto"]]
 # results = [run(name) for name in ["simplifiedpermuto"]]
 
