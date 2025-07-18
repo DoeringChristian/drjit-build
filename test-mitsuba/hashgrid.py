@@ -31,15 +31,24 @@ def run(name: str):
 
         if name == "hashgrid":
             encoding = nn.HashGridEncoding(
-                Float16, 2, n_levels=n_levels, n_features_per_level=2
+                Float16,
+                2,
+                n_levels=n_levels,
+                n_features_per_level=2,
+                seed=0,
             )
         elif name == "permuto":
             encoding = nn.PermutoEncoding(
-                Float16, 2, n_levels=n_levels, n_features_per_level=2
+                Float16,
+                2,
+                n_levels=n_levels,
+                n_features_per_level=2,
+                seed=0,
             )
 
         # Establish the network structure
         net = nn.Sequential(
+            nn.HashEncodingLayer(encoding),
             nn.Cast(Float16),
             nn.Linear(-1, 3, bias=False),
             nn.Exp()
@@ -52,7 +61,7 @@ def run(name: str):
         weights, net = nn.pack(net, layout='training')
 
         # Optimize a single-precision copy of the parameters
-        opt = Adam(lr=1e-3, params={"data": Float32(encoding.data), "weights": weights})
+        opt = Adam(lr=1e-3, params={"encoding": Float32(encoding.data), "net": weights})
 
         # This is an adaptive mixed-precision (AMP) optimization, where a half
         # precision computation runs within a larger single-precision program.
@@ -67,8 +76,8 @@ def run(name: str):
         for i in iterator:
             with dr.profile_range("iteration"):
                 # Update network state from optimizer
-                weights[:] = Float16(opt["weights"])
-                encoding.data[:] = Float16(opt["data"])
+                weights[:] = Float16(opt["net"])
+                encoding.data[:] = Float16(opt["encoding"])
 
                 # Generate jittered positions on [0, 1]^2
                 t = dr.arange(Float32, res)
@@ -77,7 +86,7 @@ def run(name: str):
                 dr.kernel_history_clear()
                 # Evaluate neural net + L2 loss
                 with dr.profile_range("fwd"):
-                    img = Array3f(net(nn.CoopVec(encoding(p))))
+                    img = Array3f(net(nn.CoopVec(p)))
                 with dr.profile_range("loss"):
                     loss = dr.squared_norm(tex.eval(p) - img)
 
@@ -104,7 +113,7 @@ def run(name: str):
         # Done optimizing, now let's plot the result
         t = dr.linspace(Float32, 0, 1, res)
         p = Array2f(dr.meshgrid(t, t))
-        img = Array3f(net(nn.CoopVec(encoding(p))))
+        img = Array3f(net(nn.CoopVec(p)))
 
         # Convert 'img' with shape 3 x (N*N) into a N x N x 3 tensor
         img = dr.reshape(TensorXf(img, flip_axes=True), (res, res, 3))
