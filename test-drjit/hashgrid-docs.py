@@ -9,6 +9,9 @@ from drjit.auto.ad import Texture2f, TensorXf, TensorXf16, Float16, Float32, Arr
 ref = TensorXf(iio.imread("https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2024/06/wave-128.png") / 256)
 tex = Texture2f(ref)
 
+# Instantiate a random number generator to initialize the network weights
+rng = dr.rng(seed=0)
+
 # Create a two dimensional hash grid encoding, with 8 levels, 2 features per
 # level and a scaling factor between levels of 1.5.
 enc = nn.HashGridEncoding(
@@ -17,6 +20,7 @@ enc = nn.HashGridEncoding(
     n_levels=8,
     n_features_per_level=2,
     per_level_scale=1.5,
+    rng=rng,
 )
 
 # Alternatively we can also use a permutohedral encoding. In contrast to a hash
@@ -53,7 +57,7 @@ net = nn.Sequential(
 )
 
 # Instantiate the network for a specific backend + input size
-net = net.alloc(TensorXf16, 2)
+net = net.alloc(TensorXf16, 2, rng=rng)
 
 # Convert to training-optimal layout
 weights, net = nn.pack(net, layout='training')
@@ -77,7 +81,6 @@ scaler = GradScaler()
 
 res = 256
 
-rng = dr.rng()
 for i in tqdm(range(40000)):
     # Update network state from optimizer
     weights[:] = Float16(opt['mlp.weights'])
