@@ -97,11 +97,11 @@ res = 256
 
 
 @dr.freeze(enabled = True)
-def step(rng, net, enc, tex, scaler, state):
+def step():
     # Update network state from optimizer
-    weights[:] = Float16(state["mlp.weights"])
+    weights[:] = Float16(opt["mlp.weights"])
     # Update the encoding parameters as well
-    enc.params[:] = Float16(state["enc.params"])
+    enc.params[:] = Float16(opt["enc.params"])
 
     # Generate jittered positions on [0, 1]^2
     t = dr.arange(Float32, res)
@@ -117,17 +117,7 @@ def step(rng, net, enc, tex, scaler, state):
 
 
 for i in tqdm(range(4000)):
-    loss = step(
-        rng,
-        net,
-        enc,
-        tex,
-        scaler,
-        {
-            "mlp.weights": opt["mlp.weights"],
-            "enc.params": opt["enc.params"],
-        },
-    )
+    loss = step()
     scaler.step(opt)
 
 # Done optimizing, now let's plot the result
