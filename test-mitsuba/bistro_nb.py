@@ -193,7 +193,7 @@ assert frozen.n_cached_recordings == 1
 
 # %%
 b = plt.bar(
-    ["Normal", "Frozen"], [time_exec, time_frozen_exec], label="kernel time", color = "C0"
+    ["Normal", "Frozen"], [time_exec, time_frozen_exec], label="kernel", color = "C0"
 )
 plt.bar_label(b, fmt="{:0.3f}s", label_type = "center")
 b = plt.bar([0], [time_asm], bottom=[time_exec], label="assembly", color="C2")
