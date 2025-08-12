@@ -319,6 +319,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/cf/58/8acf1b3e91c58313ce5cb67df61001fc9dcd21be4fadb76c1a2d540e09ed/fqdn-1.5.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/56/53/eb690efa8513166adef3e0669afd31e95ffde69fb3c52ec2ac7223ed6018/fsspec-2025.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/08/24f52364365abccfb97063ce983e24930bef7f4c5ff69efdc9ccd130149c/gpytoolbox-0.3.0-cp312-cp312-manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/91/4c/e0ce1ef95d4000ebc1c11801f9b944fa5910ecc15b5e351865763d8657f8/graphviz-0.21-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/95/04/ff642e65ad6b90db43e668d70ffb6736436c7ce41fcc549f4e9472234127/h11-0.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6c/dd/a834df6482147d48e225a49515aabc28974ad5a4ca3215c18a882565b028/html5lib-1.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/87/f5/72347bc88306acb359581ac4d52f23c0ef445b57157adedb9aee0cd689d2/httpcore-1.0.7-py3-none-any.whl
@@ -2195,6 +2196,26 @@ packages:
   - numpy
   - scipy
   - scikit-image
+- pypi: https://files.pythonhosted.org/packages/91/4c/e0ce1ef95d4000ebc1c11801f9b944fa5910ecc15b5e351865763d8657f8/graphviz-0.21-py3-none-any.whl
+  name: graphviz
+  version: '0.21'
+  sha256: 54f33de9f4f911d7e84e4191749cac8cc5653f815b06738c54db9a15ab8b1e42
+  requires_dist:
+  - build ; extra == 'dev'
+  - wheel ; extra == 'dev'
+  - twine ; extra == 'dev'
+  - flake8 ; extra == 'dev'
+  - flake8-pyproject ; extra == 'dev'
+  - pep8-naming ; extra == 'dev'
+  - tox>=3 ; extra == 'dev'
+  - pytest>=7,<8.1 ; extra == 'test'
+  - pytest-mock>=3 ; extra == 'test'
+  - pytest-cov ; extra == 'test'
+  - coverage ; extra == 'test'
+  - sphinx>=5,<7 ; extra == 'docs'
+  - sphinx-autodoc-typehints ; extra == 'docs'
+  - sphinx-rtd-theme>=0.2.5 ; extra == 'docs'
+  requires_python: '>=3.9'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gxx-13.2.0-hc7bed06_13.conda
   sha256: e50d45945a1ecfa706ec49abd74f1de7fa8c20df3b164ab59f97ff8a40633642
   md5: ac9f9104e162d715e3f8d07ad5c587f8
