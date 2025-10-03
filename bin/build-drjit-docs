@@ -2,7 +2,7 @@
 
 build-drjit
 
-cd $FLAKE_ROOT/mitsuba3/build-drjit
+cd $PROJECT_ROOT/mitsuba3/build-drjit
 
 source build-mitsuba/setpath.sh
 

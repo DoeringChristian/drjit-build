@@ -59,22 +59,21 @@
             ];
 
             # DRJIT_LIBLLVM_PATH = "${pkgs.llvm.lib}/lib/libLLVM.so";
-            NIX_ENFORCE_NO_NATIVE = null;
 
             shellHook = ''
-              export FLAKE_ROOT="$PWD"
+              export PROJECT_ROOT=$PWD
               export CUDA_PATH=${pkgs.cudatoolkit}
 
-              export CC="${gcc13}/bin/gcc"
-              export CXX="${gcc13}/bin/g++"
-              export PATH="${gcc13}/bin:$PATH"
+              export CC=${gcc13}/bin/gcc
+              export CXX=${gcc13}/bin/g++
+              export PATH=${gcc13}/bin:$PATH
 
-              export CUDA_PATH="${pkgs.cudatoolkit}"
-              export CLANGD_CUDA_INCLUDE="${pkgs.cudatoolkit}"
+              export CUDA_PATH=${pkgs.cudatoolkit}
+              export CLANGD_CUDA_INCLUDE=${pkgs.cudatoolkit}
 
-              export LD_LIBRARY_PATH="/run/opengl-driver/lib:${zlib}/lib:${llvm.lib}/lib:${stdenv.cc.cc.lib}/lib:''${LD_LIBRARY_PATH:-}"
+              export LD_LIBRARY_PATH=/run/opengl-driver/lib:${zlib}/lib:${llvm.lib}/lib:${stdenv.cc.cc.lib}/lib:''${LD_LIBRARY_PATH:-}
 
-			  export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
+              export CMAKE_CXX_COMPILER_LAUNCHER=ccache
 
               if [ ! -d .venv ]; then
                 python -m venv .venv

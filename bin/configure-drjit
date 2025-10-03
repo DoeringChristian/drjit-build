@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd $FLAKE_ROOT
+cd $PROJECT_ROOT
 
 cmake -DDRJIT_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=RelWithDebInfo -G Ninja -S mitsuba3/ext/drjit/ -B mitsuba3/build-drjit
 

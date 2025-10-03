@@ -2,6 +2,6 @@
 
 configure-mitsuba
 
-cd $FLAKE_ROOT/mitsuba3/build-mitsuba
+cd $PROJECT_ROOT/mitsuba3/build-mitsuba
 
 bear -- ninja

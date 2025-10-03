@@ -2,6 +2,6 @@
 
 configure-drjit
 
-cd $FLAKE_ROOT/mitsuba3/build-drjit
+cd $PROJECT_ROOT/mitsuba3/build-drjit
 
 ninja
