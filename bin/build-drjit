@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-configure-drjit
+cd $PROJECT_ROOT
 
-cd $PROJECT_ROOT/mitsuba3/build-drjit
-
-ninja
+cmake -DDRJIT_ENABLE_TESTS=on -DCMAKE_BUILD_TYPE=Debug -G Ninja -S mitsuba3/ext/drjit/ -B mitsuba3/build-drjit
+cmake --build mitsuba3/build-drjit

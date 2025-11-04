@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-configure-mitsuba
+cd $PROJECT_ROOT/mitsuba3/
 
-cd $PROJECT_ROOT/mitsuba3/build-mitsuba
-
-ninja
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=on -DCMAKE_BUILD_TYPE=Debug -G Ninja -S ./ -B build-mitsuba
+cmake --build build-mitsuba
